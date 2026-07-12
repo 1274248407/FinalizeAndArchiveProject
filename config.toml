@@ -1,0 +1,7 @@
+﻿[paths]
+active_dir = "D:\\documents\\translation\\01_Projects_Active"
+archive_dir = "D:\\documents\\translation\\02_Archive_Completed"
+warning_image = "D:\\documents\\translation\\03_Global_Assets\\Images\\warning_homage.webp"
+
+[settings]
+image_extensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"]

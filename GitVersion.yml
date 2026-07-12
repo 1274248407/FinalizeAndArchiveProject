@@ -1,0 +1,22 @@
+﻿mode: Mainline
+branches:
+  main:
+    regex: ^main$
+    mode: ContinuousDelivery
+    tag: ''
+    increment: Patch
+    prevent-increment-of-merged-branch-version: true
+    track-merge-target: true
+    source-branches: []
+    is-release-branch: false
+    is-mainline: true
+  feature:
+    regex: ^feature?[/-]
+    mode: ContinuousDeployment
+    tag: 'preview-{BranchName}'
+    increment: Minor
+    prevent-increment-of-merged-branch-version: false
+    track-merge-target: false
+    source-branches: ['main']
+    is-release-branch: false
+    is-mainline: false

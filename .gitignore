@@ -1,0 +1,13 @@
+﻿*.ps1c
+*.psc1
+*.psm1c
+*.log
+*.bak
+*.tmp
+.DS_Store
+Thumbs.db
+output/
+.vscode/
+.idea/
+*.nuspec
+*.nupkg
