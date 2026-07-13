@@ -11,13 +11,15 @@
     Author:  lucas_gold
     Website: https://github.com/1274248407
 #>
-class ConfigManager {
+class ConfigManager
+{
     # 配置文件缓存，键为文件路径，值为包含时间戳和配置数据的哈希表
     [hashtable] $_ConfigCache
     # 参数验证结果缓存
     [hashtable] $_ValidationCache
 
-    ConfigManager() {
+    ConfigManager()
+    {
         $this._ConfigCache = @{}
         $this._ValidationCache = @{}
     }
@@ -38,25 +40,29 @@ class ConfigManager {
         Author:  lucas_gold
         Website: https://github.com/1274248407
     #>
-    [object] LoadConfigCached([string] $ConfigFile) {
+    [object] LoadConfigCached([string] $ConfigFile)
+    {
         # 计算缓存键（规范化路径）
         $CacheKey = [System.IO.Path]::GetFullPath($ConfigFile)
 
         # 检查缓存是否存在且未过期
-        if ($this._ConfigCache.ContainsKey($CacheKey)) {
+        if ($this._ConfigCache.ContainsKey($CacheKey))
+        {
             $CachedEntry = $this._ConfigCache[$CacheKey]
             $CachedTime = $CachedEntry.Time
             $Config = $CachedEntry.Config
             # 获取文件最新修改时间并比较
             $CurrentMtime = (Get-Item -Path $ConfigFile -ErrorAction SilentlyContinue).LastWriteTimeUtc.Ticks
-            if ($null -ne $CurrentMtime -and $CurrentMtime -le $CachedTime) {
+            if ($null -ne $CurrentMtime -and $CurrentMtime -le $CachedTime)
+            {
                 return $Config
             }
         }
 
         # 缓存未命中或已过期，重新加载配置文件
         $Config = $this._LoadConfigInternal($ConfigFile)
-        if ($null -ne $Config) {
+        if ($null -ne $Config)
+        {
             $CurrentMtime = (Get-Item -Path $ConfigFile -ErrorAction SilentlyContinue).LastWriteTimeUtc.Ticks
             $this._ConfigCache[$CacheKey] = @{
                 Time   = $CurrentMtime
@@ -81,19 +87,23 @@ class ConfigManager {
         Author:  lucas_gold
         Website: https://github.com/1274248407
     #>
-    [object] _LoadConfigInternal([string] $ConfigFile) {
+    [object] _LoadConfigInternal([string] $ConfigFile)
+    {
         # 检查配置文件是否存在
-        if (-not (Test-Path -Path $ConfigFile -PathType Leaf)) {
+        if (-not (Test-Path -Path $ConfigFile -PathType Leaf))
+        {
             Write-Error "配置文件不存在: $ConfigFile"
             return $null
         }
 
-        try {
+        try
+        {
             # 读取并解析 TOML 配置文件
             $Content = Get-Content -Path $ConfigFile -Raw -Encoding UTF8
             return ConvertFrom-Toml -InputObject $Content
         }
-        catch {
+        catch
+        {
             Write-Error "配置解析错误: $PSItem"
             return $null
         }

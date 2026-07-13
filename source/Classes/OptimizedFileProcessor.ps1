@@ -11,18 +11,21 @@
     Author:  lucas_gold
     Website: https://github.com/1274248407
 #>
-class OptimizedFileProcessor {
+class OptimizedFileProcessor
+{
     # 最大并行工作线程数
     [int] $MaxWorkers
     # 自然排序键缓存，避免重复计算
     [hashtable] $_NaturalSortCache
 
-    OptimizedFileProcessor() {
-        $this.MaxWorkers = [Math]::Min(32, ([Environment]::ProcessorCount + 4))
+    OptimizedFileProcessor()
+    {
+        $this.MaxWorkers = [Math]::Min(64, ([Environment]::ProcessorCount * 2 + 4))
         $this._NaturalSortCache = @{}
     }
 
-    OptimizedFileProcessor([int] $MaxWorkers) {
+    OptimizedFileProcessor([int] $MaxWorkers)
+    {
         $this.MaxWorkers = $MaxWorkers
         $this._NaturalSortCache = @{}
     }
@@ -45,9 +48,11 @@ class OptimizedFileProcessor {
         Author:  lucas_gold
         Website: https://github.com/1274248407
     #>
-    [string] NaturalSortKey([string] $S) {
+    [string] NaturalSortKey([string] $S)
+    {
         # 检查缓存中是否已有计算结果
-        if ($this._NaturalSortCache.ContainsKey($S)) {
+        if ($this._NaturalSortCache.ContainsKey($S))
+        {
             return $this._NaturalSortCache[$S]
         }
 
@@ -77,20 +82,58 @@ class OptimizedFileProcessor {
         Author:  lucas_gold
         Website: https://github.com/1274248407
     #>
-    [System.IO.FileInfo[]] ScanDirectory([string] $Directory, [string[]] $Extensions) {
-        try {
+    [System.IO.FileInfo[]] ScanDirectory([string] $Directory, [string[]] $Extensions)
+    {
+        try
+        {
             $Files = Get-ChildItem -Path $Directory -File -ErrorAction Stop
             # 若指定了扩展名过滤器，则过滤不匹配的文件
-            if ($null -ne $Extensions -and $Extensions.Count -gt 0) {
+            if ($null -ne $Extensions -and $Extensions.Count -gt 0)
+            {
                 $LowerExtensions = $Extensions | ForEach-Object { $PSItem.ToLower() }
                 $Files = $Files | Where-Object { $LowerExtensions -contains $PSItem.Extension.ToLower() }
             }
             return $Files
         }
-        catch {
+        catch
+        {
             Write-Error "扫描目录失败 $Directory : $PSItem"
             return @()
         }
+    }
+
+    <#
+    .SYNOPSIS
+        并行排序文件列表
+    .DESCRIPTION
+        使用自然排序键对文件列表进行并行排序，利用 MaxWorkers 控制并行度。
+        适用于大规模文件集合的排序场景，显著提升排序性能。
+    .PARAMETER Files
+        (System.IO.FileInfo[]) 待排序的文件对象数组
+    .EXAMPLE
+        $SortedFiles = $Processor.SortFiles($Files)
+    .OUTPUTS
+        [System.IO.FileInfo[]] 按自然排序后的文件对象数组
+    .NOTES
+        Author:  lucas_gold
+        Website: https://github.com/1274248407
+    #>
+    [System.IO.FileInfo[]] SortFiles([System.IO.FileInfo[]] $Files)
+    {
+        if ($null -eq $Files -or $Files.Count -eq 0)
+        {
+            return @()
+        }
+
+        $SortKeys = $Files | ForEach-Object -Parallel {
+            $Processor = $using:this
+            [PSCustomObject]@{
+                File = $PSItem
+                Key  = $Processor.NaturalSortKey($PSItem.Name)
+            }
+        } -ThrottleLimit $this.MaxWorkers
+
+        return $SortKeys | Sort-Object Key | ForEach-Object { $PSItem.File }
     }
 
     <#
@@ -109,18 +152,23 @@ class OptimizedFileProcessor {
         Author:  lucas_gold
         Website: https://github.com/1274248407
     #>
-    [int] GetMaxNumberFromFilenames([string[]] $Files) {
+    [int] GetMaxNumberFromFilenames([string[]] $Files)
+    {
         $MaxNum = 0
 
-        foreach ($FileName in $Files) {
+        foreach ($FileName in $Files)
+        {
             # 提取文件名中所有连续数字
-            $Matches = [regex]::Matches($FileName, '(\d+)')
-            foreach ($Match in $Matches) {
+            $NumberMatches = [regex]::Matches($FileName, '(\d+)')
+            foreach ($Match in $NumberMatches)
+            {
                 $Num = [int]$Match.Value
-                if ($Num -gt $MaxNum) {
+                if ($Num -gt $MaxNum)
+                {
                     $MaxNum = $Num
                     # 快速路径：超过 1000000 时直接返回
-                    if ($Num -gt 1000000) {
+                    if ($Num -gt 1000000)
+                    {
                         return $Num
                     }
                 }
