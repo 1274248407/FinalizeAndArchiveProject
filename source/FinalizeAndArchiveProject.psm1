@@ -9,6 +9,9 @@
     Website: https://github.com/1274248407
 #>
 
+# 导入外部依赖模块
+Import-Module PSToml -ErrorAction Stop
+
 # 加载类定义文件（每个类独立文件，便于维护和测试）
 $ClassFiles = @(
     'BackupManager',

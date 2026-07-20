@@ -55,11 +55,11 @@ function Select-Project
     }
 
     # 显示项目列表供用户选择
-    Write-Information '请选择项目:'
+    Write-Output '请选择项目:'
     for ($i = 0; $i -lt $Projects.Count; $i++)
     {
         $ProjectName = [System.IO.Path]::GetFileName($Projects[$i])
-        Write-Information ('{0}. {1}' -f ($i + 1), $ProjectName)
+        Write-Output ('{0}. {1}' -f ($i + 1), $ProjectName)
     }
 
     # 循环读取用户输入，直到获取有效编号

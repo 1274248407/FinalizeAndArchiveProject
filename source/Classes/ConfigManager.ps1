@@ -52,21 +52,43 @@ class ConfigManager
             $CachedTime = $CachedEntry.Time
             $Config = $CachedEntry.Config
             # 获取文件最新修改时间并比较
-            $CurrentMtime = (Get-Item -Path $ConfigFile -ErrorAction SilentlyContinue).LastWriteTimeUtc.Ticks
-            if ($null -ne $CurrentMtime -and $CurrentMtime -le $CachedTime)
+            $FileItem = Get-Item -Path $ConfigFile -ErrorAction SilentlyContinue
+            if ($null -ne $FileItem)
             {
-                return $Config
+                $CurrentMtime = $FileItem.LastWriteTimeUtc.Ticks
+                if ($CurrentMtime -le $CachedTime)
+                {
+                    return $Config
+                }
             }
+
+            # 缓存未命中或已过期，重新加载配置文件
+            $Config = $this._LoadConfigInternal($ConfigFile)
+            if ($null -ne $Config)
+            {
+                $CacheFileItem = Get-Item -Path $ConfigFile -ErrorAction SilentlyContinue
+                if ($null -ne $CacheFileItem)
+                {
+                    $this._ConfigCache[$CacheKey] = @{
+                        Time   = $CacheFileItem.LastWriteTimeUtc.Ticks
+                        Config = $Config
+                    }
+                }
+            }
+            return $Config
         }
 
-        # 缓存未命中或已过期，重新加载配置文件
+        # 如果没有缓存，直接加载
         $Config = $this._LoadConfigInternal($ConfigFile)
         if ($null -ne $Config)
         {
-            $CurrentMtime = (Get-Item -Path $ConfigFile -ErrorAction SilentlyContinue).LastWriteTimeUtc.Ticks
-            $this._ConfigCache[$CacheKey] = @{
-                Time   = $CurrentMtime
-                Config = $Config
+            $CacheFileItem = Get-Item -Path $ConfigFile -ErrorAction SilentlyContinue
+            if ($null -ne $CacheFileItem)
+            {
+                $this._ConfigCache[$CacheKey] = @{
+                    Time   = $CacheFileItem.LastWriteTimeUtc.Ticks
+                    Config = $Config
+                }
             }
         }
         return $Config

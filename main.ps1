@@ -33,7 +33,7 @@ $ModuleSource = Join-Path -Path $ModuleRoot -ChildPath 'source'
 
 try
 {
-    Import-Module $ModuleSource -Force -ErrorAction Stop
+    Import-Module (Join-Path $ModuleSource 'FinalizeAndArchiveProject.psm1') -Force -ErrorAction Stop
 }
 catch
 {

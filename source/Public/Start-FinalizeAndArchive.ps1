@@ -72,7 +72,7 @@ function Start-FinalizeAndArchive
         $ActiveDir = $Config.paths.active_dir
         $ArchiveDir = $Config.paths.archive_dir
         $WarningImagePath = $Config.paths.warning_image
-        $ImageExtensions = $Config.paths.image_extensions | ForEach-Object { $PSItem.ToLower() }
+        $ImageExtensions = $Config.settings.image_extensions | ForEach-Object { $PSItem.ToLower() }
     }
     catch
     {
