@@ -26,7 +26,7 @@ function Test-PathExist
     # 遍历所有路径进行检查
     foreach ($CheckPath in $Paths)
     {
-        if (-not (Test-Path -Path $CheckPath))
+        if (-not (Test-Path -LiteralPath $CheckPath))
         {
             Write-Error "路径不存在: $CheckPath"
             return $false

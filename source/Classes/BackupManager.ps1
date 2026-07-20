@@ -10,7 +10,8 @@
     Author:  lucas_gold
     Website: https://github.com/1274248407
 #>
-class BackupManager {
+class BackupManager
+{
     <#
     .SYNOPSIS
         创建项目目录的完整备份
@@ -27,7 +28,8 @@ class BackupManager {
         Author:  lucas_gold
         Website: https://github.com/1274248407
     #>
-    static [bool] CreateBackup([string] $ProjectDir) {
+    static [bool] CreateBackup([string] $ProjectDir)
+    {
         # 解析项目路径的各个部分
         $ProjectPath = [System.IO.Path]::GetFullPath($ProjectDir)
         $ParentDir = [System.IO.Path]::GetDirectoryName($ProjectPath)
@@ -35,16 +37,19 @@ class BackupManager {
         # 构造备份目录路径
         $BackupDir = Join-Path -Path $ParentDir -ChildPath "${ProjectName}_backup"
 
-        try {
+        try
+        {
             # 若备份目录已存在，先清理再重新复制
-            if (Test-Path -Path $BackupDir) {
-                Remove-Item -Path $BackupDir -Recurse -Force
+            if (Test-Path -LiteralPath $BackupDir)
+            {
+                Remove-Item -LiteralPath $BackupDir -Recurse -Force
             }
-            Copy-Item -Path $ProjectPath -Destination $BackupDir -Recurse -Force
+            Copy-Item -LiteralPath $ProjectPath -Destination $BackupDir -Recurse -Force
             Write-Information "备份创建成功: $BackupDir"
             return $true
         }
-        catch {
+        catch
+        {
             Write-Error "备份失败: $PSItem"
             return $false
         }

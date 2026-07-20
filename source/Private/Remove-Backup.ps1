@@ -32,11 +32,11 @@ function Remove-Backup
     try
     {
         # 若备份目录存在则删除
-        if (Test-Path -Path $BackupDir)
+        if (Test-Path -LiteralPath $BackupDir)
         {
             if ($PSCmdlet.ShouldProcess($BackupDir, '删除备份目录'))
             {
-                Remove-Item -Path $BackupDir -Recurse -Force
+                Remove-Item -LiteralPath $BackupDir -Recurse -Force
                 Write-Information "备份已清理: $BackupDir"
             }
         }

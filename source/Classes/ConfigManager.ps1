@@ -112,7 +112,7 @@ class ConfigManager
     [object] _LoadConfigInternal([string] $ConfigFile)
     {
         # 检查配置文件是否存在
-        if (-not (Test-Path -Path $ConfigFile -PathType Leaf))
+        if (-not (Test-Path -LiteralPath $ConfigFile -PathType Leaf))
         {
             Write-Error "配置文件不存在: $ConfigFile"
             return $null

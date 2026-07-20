@@ -20,6 +20,7 @@ function Select-Project
 {
     [CmdletBinding()]
     [OutputType([string])]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '')]
     param (
         [Parameter(Mandatory = $true)]
         [string] $ActiveDir
@@ -54,12 +55,12 @@ function Select-Project
         return $null
     }
 
-    # 显示项目列表供用户选择
-    Write-Output '请选择项目:'
+    # 显示项目列表供用户选择（Write-Host 直接输出到控制台，不受管道捕获影响）
+    Write-Host '请选择项目:'
     for ($i = 0; $i -lt $Projects.Count; $i++)
     {
         $ProjectName = [System.IO.Path]::GetFileName($Projects[$i])
-        Write-Output ('{0}. {1}' -f ($i + 1), $ProjectName)
+        Write-Host ('{0}. {1}' -f ($i + 1), $ProjectName)
     }
 
     # 循环读取用户输入，直到获取有效编号

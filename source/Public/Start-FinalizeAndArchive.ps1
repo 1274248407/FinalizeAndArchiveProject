@@ -43,7 +43,7 @@ function Start-FinalizeAndArchive
         foreach ($Path in $SearchPaths)
         {
             $FullPath = [System.IO.Path]::GetFullPath($Path)
-            if (Test-Path -Path $FullPath -PathType Leaf)
+            if (Test-Path -LiteralPath $FullPath -PathType Leaf)
             {
                 $ConfigPath = $FullPath
                 break
@@ -105,7 +105,7 @@ function Start-FinalizeAndArchive
 
     # 构建完成页目录路径
     $FinalPagesPath = Join-Path -Path $ProjectDir -ChildPath '02_Preprocessing\result'
-    if (-not (Test-Path -Path $FinalPagesPath -PathType Container))
+    if (-not (Test-Path -LiteralPath $FinalPagesPath -PathType Container))
     {
         Write-Error "完成页目录不存在: $FinalPagesPath"
         return $false
@@ -135,7 +135,7 @@ function Start-FinalizeAndArchive
 
         try
         {
-            Rename-Item -Path $OldPath -NewName $NewName -Force
+            Rename-Item -LiteralPath $OldPath -NewName $NewName -Force
         }
         catch
         {
@@ -149,7 +149,7 @@ function Start-FinalizeAndArchive
     {
         $Ext = [System.IO.Path]::GetExtension($WarningImagePath)
         $WarningTarget = Join-Path -Path $FinalPagesPath -ChildPath ("{0:D$Width}{1}" -f 2, $Ext)
-        Copy-Item -Path $WarningImagePath -Destination $WarningTarget -Force
+        Copy-Item -LiteralPath $WarningImagePath -Destination $WarningTarget -Force
         Write-Information '警告图片插入完成'
     }
     catch
@@ -163,7 +163,7 @@ function Start-FinalizeAndArchive
 
     # 更新 README 中的进度标记
     $ReadmePath = Join-Path -Path $ProjectDir -ChildPath 'README.md'
-    if (Test-Path -Path $ReadmePath -PathType Leaf)
+    if (Test-Path -LiteralPath $ReadmePath -PathType Leaf)
     {
         try
         {
