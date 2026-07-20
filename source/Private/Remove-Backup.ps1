@@ -14,8 +14,9 @@
     Author:  lucas_gold
     Website: https://github.com/1274248407
 #>
-function Remove-Backup {
-    [CmdletBinding()]
+function Remove-Backup
+{
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
     [OutputType([bool])]
     param (
         [Parameter(Mandatory = $true)]
@@ -28,15 +29,21 @@ function Remove-Backup {
     $ProjectName = [System.IO.Path]::GetFileName($ProjectPath)
     $BackupDir = Join-Path -Path $ParentDir -ChildPath "${ProjectName}_backup"
 
-    try {
+    try
+    {
         # 若备份目录存在则删除
-        if (Test-Path -Path $BackupDir) {
-            Remove-Item -Path $BackupDir -Recurse -Force
-            Write-Information "备份已清理: $BackupDir"
+        if (Test-Path -Path $BackupDir)
+        {
+            if ($PSCmdlet.ShouldProcess($BackupDir, '删除备份目录'))
+            {
+                Remove-Item -Path $BackupDir -Recurse -Force -WhatIf:$WhatIfPreference
+                Write-Information "备份已清理: $BackupDir"
+            }
         }
         return $true
     }
-    catch {
+    catch
+    {
         Write-Error "备份清理失败: $PSItem"
         return $false
     }

@@ -1,4 +1,4 @@
-@{
+﻿@{
     RootModule           = 'FinalizeAndArchiveProject.psm1'
     ModuleVersion        = '0.1.0'
     CompatiblePSEditions = @('Core')

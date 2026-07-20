@@ -19,8 +19,9 @@ $sourcePath = Join-Path -Path $modulePath -ChildPath 'source'
 $outputPath = Join-Path -Path $modulePath -ChildPath 'output'
 $requiredModulesPath = Join-Path -Path $outputPath -ChildPath 'RequiredModules'
 
-if ($ResolveDependency) {
-    Write-Host "Resolving dependencies..."
+if ($ResolveDependency)
+{
+    Write-Output 'Resolving dependencies...'
 
     $requiredModules = @(
         @{
@@ -29,27 +30,33 @@ if ($ResolveDependency) {
         }
     )
 
-    foreach ($module in $requiredModules) {
+    foreach ($module in $requiredModules)
+    {
         $moduleOutputPath = Join-Path -Path $requiredModulesPath -ChildPath $module.Name
-        if (-not (Test-Path -Path $moduleOutputPath)) {
-            Write-Host "Installing $($module.Name)..."
-            if ($UseModuleFast) {
+        if (-not (Test-Path -Path $moduleOutputPath))
+        {
+            Write-Output "Installing $($module.Name)..."
+            if ($UseModuleFast)
+            {
                 Save-ModuleFast -Name $module.Name -Version $module.Version -Path $requiredModulesPath -Force
             }
-            else {
+            else
+            {
                 Save-Module -Name $module.Name -RequiredVersion $module.Version -Path $requiredModulesPath -Force
             }
         }
     }
 }
 
-if ($Tasks -contains 'Build') {
-    Write-Host "Building module..."
+if ($Tasks -contains 'Build')
+{
+    Write-Output 'Building module...'
 
     $moduleName = 'FinalizeAndArchiveProject'
     $buildOutputPath = Join-Path -Path $outputPath -ChildPath $moduleName
 
-    if (Test-Path -Path $buildOutputPath) {
+    if (Test-Path -Path $buildOutputPath)
+    {
         Remove-Item -Path $buildOutputPath -Recurse -Force
     }
 
@@ -57,15 +64,39 @@ if ($Tasks -contains 'Build') {
 
     Copy-Item -Path (Join-Path -Path $sourcePath -ChildPath '*') -Destination $buildOutputPath -Recurse -Force
 
-    Write-Host "Module built successfully at $buildOutputPath"
+    Write-Output "Module built successfully at $buildOutputPath"
 }
 
-if ($Tasks -contains 'Test') {
-    Write-Host "Running tests..."
-    $testResults = Invoke-Pester -Path (Join-Path -Path $modulePath -ChildPath 'tests') -PassThru
-    if ($testResults.FailedCount -gt 0) {
-        Write-Error "Tests failed"
+if ($Tasks -contains 'Analyze')
+{
+    Write-Output 'Running script analysis...'
+    $analysisFiles = Get-ChildItem -Path $modulePath -Recurse -Include '*.ps1', '*.psm1', '*.psd1' |
+        Where-Object { $PSItem.FullName -notmatch 'output|.git|node_modules' }
+
+    $results = @()
+    foreach ($File in $analysisFiles)
+    {
+        $results += Invoke-ScriptAnalyzer -Path $File.FullName -Settings (Join-Path $modulePath 'PSScriptAnalyzerSettings.psd1')
+    }
+
+    if ($results)
+    {
+        Write-Output "`nScript analysis issues found:"
+        $results | Format-Table -Property RuleName, Severity, @{n = 'Path'; e = { $PSItem.ScriptPath.Split('\')[-1] } }, Line, Message -AutoSize
+        Write-Error 'Script analysis failed'
         exit 1
     }
-    Write-Host "All tests passed"
+    Write-Output 'Script analysis passed'
+}
+
+if ($Tasks -contains 'Test')
+{
+    Write-Output 'Running tests...'
+    $testResults = Invoke-Pester -Path (Join-Path -Path $modulePath -ChildPath 'tests') -PassThru
+    if ($testResults.FailedCount -gt 0)
+    {
+        Write-Error 'Tests failed'
+        exit 1
+    }
+    Write-Output 'All tests passed'
 }

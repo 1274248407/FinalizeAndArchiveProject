@@ -21,7 +21,7 @@
 #>
 function Start-FinalizeAndArchive
 {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
     [OutputType([bool])]
     param (
         [string] $ConfigPath
@@ -29,7 +29,6 @@ function Start-FinalizeAndArchive
 
     # 初始化各管理器实例
     $ConfigManager = [ConfigManager]::new()
-    $BackupManager = [BackupManager]::new()
     $FileProcessor = [OptimizedFileProcessor]::new()
 
     # 若未指定配置文件，按优先级自动搜索
@@ -82,7 +81,7 @@ function Start-FinalizeAndArchive
     }
 
     # 验证关键路径是否存在
-    if (-not (Test-PathExists -Paths @($ActiveDir, $ArchiveDir, $WarningImagePath)))
+    if (-not (Test-PathExist -Paths @($ActiveDir, $ArchiveDir, $WarningImagePath)))
     {
         return $false
     }
@@ -133,7 +132,6 @@ function Start-FinalizeAndArchive
         $OldPath = $Files[$i].FullName
         $Ext = $Files[$i].Extension
         $NewName = "{0:D$Width}{1}" -f ($i + 2), $Ext
-        $NewPath = Join-Path -Path $FinalPagesPath -ChildPath $NewName
 
         try
         {

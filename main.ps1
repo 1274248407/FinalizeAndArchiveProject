@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     FinalizeAndArchiveProject - 项目归档处理工具入口脚本
 .DESCRIPTION

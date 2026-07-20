@@ -16,23 +16,27 @@ $ClassFiles = @(
     'OptimizedFileProcessor'
 )
 
-foreach ($ClassFile in $ClassFiles) {
+foreach ($ClassFile in $ClassFiles)
+{
     $ClassPath = Join-Path -Path $PSScriptRoot -ChildPath "Classes\$ClassFile.ps1"
-    if (Test-Path -Path $ClassPath) {
+    if (Test-Path -Path $ClassPath)
+    {
         . $ClassPath
     }
 }
 
 # 加载内部私有函数
 $PrivateFunctions = @(
-    'Test-PathExists',
+    'Test-PathExist',
     'Invoke-ArchiveProject',
     'Remove-Backup'
 )
 
-foreach ($Function in $PrivateFunctions) {
+foreach ($Function in $PrivateFunctions)
+{
     $FunctionPath = Join-Path -Path $PSScriptRoot -ChildPath "Private\$Function.ps1"
-    if (Test-Path -Path $FunctionPath) {
+    if (Test-Path -Path $FunctionPath)
+    {
         . $FunctionPath
     }
 }
@@ -43,9 +47,11 @@ $PublicFunctions = @(
     'Select-Project'
 )
 
-foreach ($Function in $PublicFunctions) {
+foreach ($Function in $PublicFunctions)
+{
     $FunctionPath = Join-Path -Path $PSScriptRoot -ChildPath "Public\$Function.ps1"
-    if (Test-Path -Path $FunctionPath) {
+    if (Test-Path -Path $FunctionPath)
+    {
         . $FunctionPath
     }
 }
