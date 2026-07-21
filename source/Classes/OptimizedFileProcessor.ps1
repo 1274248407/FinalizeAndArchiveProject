@@ -86,12 +86,12 @@ class OptimizedFileProcessor
     {
         try
         {
-            $Files = Get-ChildItem -Path $Directory -File -ErrorAction Stop
+            $Files = Get-ChildItem -LiteralPath $Directory -File -ErrorAction Stop
             # 若指定了扩展名过滤器，则过滤不匹配的文件
             if ($null -ne $Extensions -and $Extensions.Count -gt 0)
             {
                 $LowerExtensions = $Extensions | ForEach-Object { $PSItem.ToLower() }
-                $Files = $Files | Where-Object { $LowerExtensions -contains $PSItem.Extension.ToLower() }
+                $Files = $Files | Where-Object { $LowerExtensions -contains $_.Extension.ToLower() }
             }
             return $Files
         }
@@ -125,13 +125,14 @@ class OptimizedFileProcessor
             return @()
         }
 
-        $SortKeys = $Files | ForEach-Object -Parallel {
-            $Processor = $using:this
+        # 串行计算自然排序键并排序（ForEach-Object -Parallel 在类方法中会因 $using:this 导致死锁）
+        $SortKeys = foreach ($File in $Files)
+        {
             [PSCustomObject]@{
-                File = $PSItem
-                Key  = $Processor.NaturalSortKey($PSItem.Name)
+                File = $File
+                Key  = $this.NaturalSortKey($File.Name)
             }
-        } -ThrottleLimit $this.MaxWorkers
+        }
 
         return $SortKeys | Sort-Object Key | ForEach-Object { $PSItem.File }
     }

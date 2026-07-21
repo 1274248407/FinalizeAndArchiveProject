@@ -105,6 +105,7 @@ function Start-FinalizeAndArchive
 
     # 构建完成页目录路径
     $FinalPagesPath = Join-Path -Path $ProjectDir -ChildPath '02_Preprocessing\result'
+
     if (-not (Test-Path -LiteralPath $FinalPagesPath -PathType Container))
     {
         Write-Error "完成页目录不存在: $FinalPagesPath"
@@ -167,7 +168,7 @@ function Start-FinalizeAndArchive
     {
         try
         {
-            $Content = Get-Content -Path $ReadmePath -Raw -Encoding UTF8
+            $Content = Get-Content -LiteralPath $ReadmePath -Raw -Encoding UTF8
 
             # 待完成任务列表
             $Items = @(
@@ -187,7 +188,7 @@ function Start-FinalizeAndArchive
             # 更新嵌字进度
             $Content = $Content -replace '- \[\[ Xx\]\?\] 嵌字 \(完成至页 .*?\)', "- [X] 嵌字 (完成至页 $TotalPages)"
 
-            Set-Content -Path $ReadmePath -Value $Content -Encoding UTF8 -NoNewline
+            Set-Content -LiteralPath $ReadmePath -Value $Content -Encoding UTF8 -NoNewline
             Write-Information 'README更新完成'
         }
         catch

@@ -57,7 +57,7 @@ if ($Tasks -contains 'Build')
 
     if (Test-Path -Path $buildOutputPath)
     {
-        Remove-Item -Path $buildOutputPath -Recurse -Force
+        Remove-Item -LiteralPath $buildOutputPath -Recurse -Force
     }
 
     New-Item -ItemType Directory -Path $buildOutputPath -Force | Out-Null

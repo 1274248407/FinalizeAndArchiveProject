@@ -33,7 +33,7 @@ function Select-Project
     $Projects = @()
     try
     {
-        $Entries = Get-ChildItem -Path $ActiveDir -Directory -ErrorAction Stop
+        $Entries = Get-ChildItem -LiteralPath $ActiveDir -Directory -ErrorAction Stop
         foreach ($Entry in $Entries)
         {
             if ($Entry.Name -match $Pattern)

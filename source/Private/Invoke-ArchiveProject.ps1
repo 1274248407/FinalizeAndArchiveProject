@@ -16,7 +16,8 @@
     Author:  lucas_gold
     Website: https://github.com/1274248407
 #>
-function Invoke-ArchiveProject {
+function Invoke-ArchiveProject
+{
     [CmdletBinding()]
     [OutputType([bool])]
     param (
@@ -26,16 +27,26 @@ function Invoke-ArchiveProject {
         [string] $ArchiveDir
     )
 
-    try {
+    try
+    {
         # 提取项目名称并构造目标路径
         $ProjectName = [System.IO.Path]::GetFileName($ProjectDir)
         $Destination = Join-Path -Path $ArchiveDir -ChildPath $ProjectName
 
-        Move-Item -Path $ProjectDir -Destination $Destination -Force
-        Write-Information "项目已归档: $ArchiveDir"
+        # 使用 -LiteralPath 避免项目名中的方括号被解释为通配符
+        Move-Item -LiteralPath $ProjectDir -Destination $Destination -Force
+
+        # 验证移动结果：源目录应已不存在，目标目录应存在
+        if ((Test-Path -LiteralPath $ProjectDir) -or (-not (Test-Path -LiteralPath $Destination)))
+        {
+            throw '归档验证失败: 源目录仍存在或目标目录不存在'
+        }
+
+        Write-Information "项目已归档: $Destination"
         return $true
     }
-    catch {
+    catch
+    {
         Write-Error "归档失败: $PSItem"
         return $false
     }
