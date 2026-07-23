@@ -33,32 +33,31 @@ $PrivateFunctions = @(
     'Test-PathExist',
     'Invoke-ArchiveProject',
     'Remove-Backup'
+)
 
-    foreach ($Function in $PrivateFunctions)
+foreach ($Function in $PrivateFunctions)
+{
+    $FunctionPath = Join-Path -Path $PSScriptRoot -ChildPath "Private\$Function.ps1"
+    if (Test-Path -Path $FunctionPath)
     {
-        $FunctionPath = Join-Path -Path $PSScriptRoot -ChildPath "Private\$Function.ps1"
-        if (Test-Path -Path $FunctionPath)
-        {
-            . $FunctionPath
-        }
+        . $FunctionPath
     }
+}
 
-    # 加载公开函数
-    $PublicFunctions = @(
-        'Start-FinalizeAndArchive',
-        'Select-Project'
-    )
+# 加载公开函数
+$PublicFunctions = @(
+    'Start-FinalizeAndArchive',
+    'Select-Project'
+)
 
-    foreach ($Function in $PublicFunctions)
+foreach ($Function in $PublicFunctions)
+{
+    $FunctionPath = Join-Path -Path $PSScriptRoot -ChildPath "Public\$Function.ps1"
+    if (Test-Path -Path $FunctionPath)
     {
-        $FunctionPath = Join-Path -Path $PSScriptRoot -ChildPath "Public\$Function.ps1"
-        if (Test-Path -Path $FunctionPath)
-        {
-            . $FunctionPath
-        }
+        . $FunctionPath
     }
-    
-    #
+}
 
-    # 导出公开函数 导出公开函数
-    ExportceeMember -Function $PublicFunctionsExportceeMember -Function $PublicFunctions
+# 导出公开函数
+Export-ModuleMember -Function $PublicFunctions
