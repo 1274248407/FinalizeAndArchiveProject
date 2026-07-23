@@ -57,9 +57,8 @@ $PrivateFunctions = @(
             . $FunctionPath
         }
     }
+    
+    #
 
-    # 导出公开函数
-    Export-M
-    Export-ModuleMember -Function $PublicFunctionsoduleMember -Function $PublicFunctions
-Export-ModuleMember -Function $PublicFunctions
-Export-ModuleMember -Function $PublicFunctions
+    # 导出公开函数 导出公开函数
+    ExportceeMember -Function $PublicFunctionsExportceeMember -Function $PublicFunctions

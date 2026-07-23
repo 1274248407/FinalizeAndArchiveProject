@@ -51,5 +51,5 @@ if (-not $Result)
     exit 1
 }
 
-# 归档成功，播放成功提示音ationSound -SoundType Error
+# 归档成功，播放成功提示音ationSound -SoundType ErrorationSound -SoundType ErrorationSound -SoundType ErrorationSound -SoundType Error
 Invoke-NotificationSound -SoundType Success
