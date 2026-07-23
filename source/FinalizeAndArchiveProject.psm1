@@ -32,33 +32,34 @@ foreach ($ClassFile in $ClassFiles)
 $PrivateFunctions = @(
     'Test-PathExist',
     'Invoke-ArchiveProject',
-    'Remove-Backup',
-    'Send-ToastNotification'
-)
+    'Remove-Backup'
 
-foreach ($Function in $PrivateFunctions)
-{
-    $FunctionPath = Join-Path -Path $PSScriptRoot -ChildPath "Private\$Function.ps1"
-    if (Test-Path -Path $FunctionPath)
+    foreach ($Function in $PrivateFunctions)
     {
-        . $FunctionPath
+        $FunctionPath = Join-Path -Path $PSScriptRoot -ChildPath "Private\$Function.ps1"
+        if (Test-Path -Path $FunctionPath)
+        {
+            . $FunctionPath
+        }
     }
-}
 
-# 加载公开函数
-$PublicFunctions = @(
-    'Start-FinalizeAndArchive',
-    'Select-Project'
-)
+    # 加载公开函数
+    $PublicFunctions = @(
+        'Start-FinalizeAndArchive',
+        'Select-Project'
+    )
 
-foreach ($Function in $PublicFunctions)
-{
-    $FunctionPath = Join-Path -Path $PSScriptRoot -ChildPath "Public\$Function.ps1"
-    if (Test-Path -Path $FunctionPath)
+    foreach ($Function in $PublicFunctions)
     {
-        . $FunctionPath
+        $FunctionPath = Join-Path -Path $PSScriptRoot -ChildPath "Public\$Function.ps1"
+        if (Test-Path -Path $FunctionPath)
+        {
+            . $FunctionPath
+        }
     }
-}
 
-# 导出公开函数
+    # 导出公开函数
+    Export-M
+    Export-ModuleMember -Function $PublicFunctionsoduleMember -Function $PublicFunctions
+Export-ModuleMember -Function $PublicFunctions
 Export-ModuleMember -Function $PublicFunctions

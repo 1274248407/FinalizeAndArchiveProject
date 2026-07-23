@@ -9,10 +9,10 @@
     (string) 声音类型：'Success'（成功）、'Warning'（警告）、'Error'（错误）、'Info'（信息）
     默认为 'Success'
 .EXAMPLE
-    Send-ToastNotification -SoundType Success
+    Invoke-NotificationSound -SoundType Success
     # 播放成功提示音并在控制台显示消息
 .EXAMPLE
-    Send-ToastNotification -SoundType Error
+    Invoke-NotificationSound -SoundType Error
     # 播放错误提示音并在控制台显示消息
 .INPUTS
     [string]
@@ -22,7 +22,7 @@
     Author:  lucas_gold
     Website: https://github.com/1274248407
 #>
-function Send-ToastNotification
+function Invoke-NotificationSound
 {
     [CmdletBinding()]
     [OutputType([void])]

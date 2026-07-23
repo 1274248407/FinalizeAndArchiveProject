@@ -47,9 +47,9 @@ $Result = Start-FinalizeAndArchive -ConfigPath $ConfigPath
 if (-not $Result)
 {
     # 归档失败，播放失败提示音
-    Send-ToastNotification -SoundType Error
+    Invoke-NotificationSound -SoundType Error
     exit 1
 }
 
-# 归档成功，播放成功提示音
-Send-ToastNotification -SoundType Success
+# 归档成功，播放成功提示音ationSound -SoundType Error
+Invoke-NotificationSound -SoundType Success
