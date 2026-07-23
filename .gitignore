@@ -9,5 +9,6 @@ Thumbs.db
 output/
 .vscode/
 .idea/
+lib/
 *.nuspec
 *.nupkg

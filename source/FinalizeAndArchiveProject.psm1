@@ -32,7 +32,8 @@ foreach ($ClassFile in $ClassFiles)
 $PrivateFunctions = @(
     'Test-PathExist',
     'Invoke-ArchiveProject',
-    'Remove-Backup'
+    'Remove-Backup',
+    'Send-ToastNotification'
 )
 
 foreach ($Function in $PrivateFunctions)
