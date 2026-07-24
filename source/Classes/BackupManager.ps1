@@ -45,12 +45,12 @@ class BackupManager
                 Remove-Item -LiteralPath $BackupDir -Recurse -Force
             }
             Copy-Item -LiteralPath $ProjectPath -Destination $BackupDir -Recurse -Force
-            Write-Information "备份创建成功: $BackupDir"
+            Write-Log -Level Success -Message "备份创建成功: $BackupDir"
             return $true
         }
         catch
         {
-            Write-Error "备份失败: $PSItem"
+            Write-Log -Level Warning -Message "备份失败: $PSItem"
             return $false
         }
     }

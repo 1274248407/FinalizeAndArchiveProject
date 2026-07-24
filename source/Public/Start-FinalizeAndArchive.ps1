@@ -53,16 +53,16 @@ function Start-FinalizeAndArchive
         # 未找到任何配置文件则返回错误
         if (-not $ConfigPath)
         {
-            Write-Error '未找到配置文件'
+            Write-Log -Level Warning -Message '未找到配置文件'
             return $false
         }
     }
 
     # 加载配置
-    $Config = $ConfigManager.LoadConfigCached($ConfigPath)
+    $Config = $ConfigManager.LoadConfig($ConfigPath)
     if ($null -eq $Config)
     {
-        Write-Error '配置加载失败'
+        Write-Log -Level Warning -Message '配置加载失败'
         return $false
     }
 
@@ -76,7 +76,7 @@ function Start-FinalizeAndArchive
     }
     catch
     {
-        Write-Error "配置键缺失: $PSItem"
+        Write-Log -Level Warning -Message "配置键缺失: $PSItem"
         return $false
     }
 
@@ -108,7 +108,7 @@ function Start-FinalizeAndArchive
 
     if (-not (Test-Path -LiteralPath $FinalPagesPath -PathType Container))
     {
-        Write-Error "完成页目录不存在: $FinalPagesPath"
+        Write-Log -Level Warning -Message "完成页目录不存在: $FinalPagesPath"
         return $false
     }
 
@@ -116,7 +116,7 @@ function Start-FinalizeAndArchive
     $Files = $FileProcessor.ScanDirectory($FinalPagesPath, $ImageExtensions)
     if ($Files.Count -eq 0)
     {
-        Write-Error '未找到图片文件'
+        Write-Log -Level Warning -Message '未找到图片文件'
         return $false
     }
 
@@ -127,20 +127,39 @@ function Start-FinalizeAndArchive
     $MaxNum = $FileProcessor.GetMaxNumberFromFilenames($FileNames)
     $Width = [Math]::Max($MaxNum.ToString().Length, 3)
 
-    # 从后往前重命名文件，腾出第 2 位给警告图片
+    # 第一阶段：将所有待移动文件重命名为临时名称，避免重命名冲突
     for ($i = $Files.Count - 1; $i -gt 0; $i--)
     {
         $OldPath = $Files[$i].FullName
         $Ext = $Files[$i].Extension
-        $NewName = "{0:D$Width}{1}" -f ($i + 2), $Ext
+        $TmpName = "__tmp_{0:D$Width}{1}" -f $i, $Ext
 
         try
         {
-            Rename-Item -LiteralPath $OldPath -NewName $NewName -Force
+            Rename-Item -LiteralPath $OldPath -NewName $TmpName -Force
         }
         catch
         {
-            Write-Error "重命名失败 $OldPath -> $NewName : $PSItem"
+            Write-Log -Level Warning -Message "重命名失败 $OldPath -> $TmpName : $PSItem"
+            return $false
+        }
+    }
+
+    # 第二阶段：从临时名称重命名为最终编号（跳过第 2 位留给警告图片）
+    for ($i = $Files.Count - 1; $i -gt 0; $i--)
+    {
+        $Ext = $Files[$i].Extension
+        $TmpName = "__tmp_{0:D$Width}{1}" -f $i, $Ext
+        $TmpPath = Join-Path -Path $FinalPagesPath -ChildPath $TmpName
+        $NewName = "{0:D$Width}{1}" -f ($i + 1), $Ext
+
+        try
+        {
+            Rename-Item -LiteralPath $TmpPath -NewName $NewName -Force
+        }
+        catch
+        {
+            Write-Log -Level Warning -Message "重命名失败 $TmpName -> $NewName : $PSItem"
             return $false
         }
     }
@@ -151,11 +170,11 @@ function Start-FinalizeAndArchive
         $Ext = [System.IO.Path]::GetExtension($WarningImagePath)
         $WarningTarget = Join-Path -Path $FinalPagesPath -ChildPath ("{0:D$Width}{1}" -f 2, $Ext)
         Copy-Item -LiteralPath $WarningImagePath -Destination $WarningTarget -Force
-        Write-Information '警告图片插入完成'
+        Write-Log -Level Success -Message '警告图片插入完成'
     }
     catch
     {
-        Write-Error "复制警告图片失败: $PSItem"
+        Write-Log -Level Warning -Message "复制警告图片失败: $PSItem"
         return $false
     }
 
@@ -189,11 +208,11 @@ function Start-FinalizeAndArchive
             $Content = $Content -replace '- \[\[ Xx\]\?\] 嵌字 \(完成至页 .*?\)', "- [X] 嵌字 (完成至页 $TotalPages)"
 
             Set-Content -LiteralPath $ReadmePath -Value $Content -Encoding UTF8 -NoNewline
-            Write-Information 'README更新完成'
+            Write-Log -Level Success -Message 'README更新完成'
         }
         catch
         {
-            Write-Warning "README更新失败: $PSItem"
+            Write-Log -Level Warning -Message "README更新失败: $PSItem"
         }
     }
 
@@ -206,9 +225,9 @@ function Start-FinalizeAndArchive
     # 清理备份
     if (-not (Remove-Backup -ProjectDir $ProjectDir))
     {
-        Write-Warning '备份清理失败'
+        Write-Log -Level Warning -Message '备份清理失败'
     }
 
-    Write-Information '项目归档完成'
+    Write-Log -Level Success -Message '项目归档完成'
     return $true
 }

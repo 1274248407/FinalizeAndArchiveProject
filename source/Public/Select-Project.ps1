@@ -44,14 +44,14 @@ function Select-Project
     }
     catch
     {
-        Write-Error "扫描项目目录失败: $PSItem"
+        Write-Log -Level Warning -Message "扫描项目目录失败: $PSItem"
         return $null
     }
 
     # 无项目时直接返回
     if ($Projects.Count -eq 0)
     {
-        Write-Warning '未找到项目'
+        Write-Log -Level Warning -Message '未找到项目'
         return $null
     }
 
@@ -75,11 +75,11 @@ function Select-Project
             {
                 return $Projects[$Index]
             }
-            Write-Warning '编号超出范围'
+            Write-Log -Level Warning -Message '编号超出范围'
         }
         catch
         {
-            Write-Warning '请输入有效数字'
+            Write-Log -Level Warning -Message '请输入有效数字'
         }
     }
 }

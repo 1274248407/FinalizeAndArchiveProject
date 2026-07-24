@@ -43,22 +43,22 @@ function Invoke-NotificationSound
         'Success'
         {
             $SoundFile = Join-Path -Path $SoundsDir -ChildPath 'success.wav'
-            Write-Information '[完成] 任务执行成功！'
+            Write-Log -Level Success -Message '任务执行成功！'
         }
         'Warning'
         {
             $SoundFile = Join-Path -Path $SoundsDir -ChildPath 'warning.wav'
-            Write-Information '[警告] 任务执行完成，但有警告信息'
+            Write-Log -Level Warning -Message '任务执行完成，但有警告信息'
         }
         'Error'
         {
             $SoundFile = Join-Path -Path $SoundsDir -ChildPath 'error.wav'
-            Write-Information '[错误] 任务执行失败！'
+            Write-Log -Level Warning -Message '任务执行失败！'
         }
         'Info'
         {
             $SoundFile = Join-Path -Path $SoundsDir -ChildPath 'info.wav'
-            Write-Information '[信息] 任务执行完成'
+            Write-Log -Level Info -Message '任务执行完成'
         }
     }
 
@@ -73,11 +73,11 @@ function Invoke-NotificationSound
         }
         catch
         {
-            Write-Warning "播放音效失败: $PSItem"
+            Write-Log -Level Warning -Message "播放音效失败: $PSItem"
         }
     }
     else
     {
-        Write-Warning "音效文件不存在: $SoundFile"
+        Write-Log -Level Warning -Message "音效文件不存在: $SoundFile"
     }
 }

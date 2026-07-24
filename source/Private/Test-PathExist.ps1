@@ -28,7 +28,7 @@ function Test-PathExist
     {
         if (-not (Test-Path -LiteralPath $CheckPath))
         {
-            Write-Error "路径不存在: $CheckPath"
+            Write-Log -Level Warning -Message "路径不存在: $CheckPath"
             return $false
         }
     }

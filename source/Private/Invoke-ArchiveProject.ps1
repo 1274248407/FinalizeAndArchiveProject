@@ -42,12 +42,12 @@ function Invoke-ArchiveProject
             throw '归档验证失败: 源目录仍存在或目标目录不存在'
         }
 
-        Write-Information "项目已归档: $Destination"
+        Write-Log -Level Success -Message "项目已归档: $Destination"
         return $true
     }
     catch
     {
-        Write-Error "归档失败: $PSItem"
+        Write-Log -Level Warning -Message "归档失败: $PSItem"
         return $false
     }
 }

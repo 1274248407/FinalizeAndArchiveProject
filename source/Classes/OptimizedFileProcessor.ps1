@@ -1,9 +1,8 @@
 ﻿<#
 .SYNOPSIS
-    高性能文件处理器
+    文件处理器
 .DESCRIPTION
     提供文件扫描、自然排序（Natural Sort）和文件名编号分析等功能。
-    内部使用缓存机制优化自然排序键的重复计算，适用于大规模文件集合的处理场景。
 .EXAMPLE
     $Processor = [OptimizedFileProcessor]::new()
     $Files = $Processor.ScanDirectory("D:\Images", @(".jpg", ".png"))
@@ -15,19 +14,15 @@ class OptimizedFileProcessor
 {
     # 最大并行工作线程数
     [int] $MaxWorkers
-    # 自然排序键缓存，避免重复计算
-    [hashtable] $_NaturalSortCache
 
     OptimizedFileProcessor()
     {
         $this.MaxWorkers = [Math]::Min(64, ([Environment]::ProcessorCount * 2 + 4))
-        $this._NaturalSortCache = @{}
     }
 
     OptimizedFileProcessor([int] $MaxWorkers)
     {
         $this.MaxWorkers = $MaxWorkers
-        $this._NaturalSortCache = @{}
     }
 
     <#
@@ -37,7 +32,6 @@ class OptimizedFileProcessor
         将字符串中的数字补零对齐，生成可直接用于词法排序的字符串键。
         例如 "file2.txt" → "file0000000002.txt"，"file10.txt" → "file0000000010.txt"，
         使得 Sort-Object 按字符串排序时得到正确的自然顺序（2 < 10）。
-        结果会被缓存以提高重复调用的性能。
     .PARAMETER S
         (string) 待生成排序键的字符串
     .EXAMPLE
@@ -50,18 +44,8 @@ class OptimizedFileProcessor
     #>
     [string] NaturalSortKey([string] $S)
     {
-        # 检查缓存中是否已有计算结果
-        if ($this._NaturalSortCache.ContainsKey($S))
-        {
-            return $this._NaturalSortCache[$S]
-        }
-
         # 将数字部分补零至 10 位，使字符串排序等同于自然排序
-        $Result = [regex]::Replace($S, '\d+', { $Args[0].Value.PadLeft(10, '0') })
-
-        # 将结果存入缓存
-        $this._NaturalSortCache[$S] = $Result
-        return $Result
+        return [regex]::Replace($S, '\d+', { $Args[0].Value.PadLeft(10, '0') })
     }
 
     <#
@@ -97,7 +81,7 @@ class OptimizedFileProcessor
         }
         catch
         {
-            Write-Error "扫描目录失败 $Directory : $PSItem"
+            Write-Log -Level Warning -Message "扫描目录失败 $Directory : $PSItem"
             return @()
         }
     }

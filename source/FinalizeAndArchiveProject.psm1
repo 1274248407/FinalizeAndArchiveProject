@@ -32,7 +32,9 @@ foreach ($ClassFile in $ClassFiles)
 $PrivateFunctions = @(
     'Test-PathExist',
     'Invoke-ArchiveProject',
-    'Remove-Backup'
+    'Invoke-NotificationSound',
+    'Remove-Backup',
+    'Write-Log'
 )
 
 foreach ($Function in $PrivateFunctions)
@@ -47,7 +49,8 @@ foreach ($Function in $PrivateFunctions)
 # 加载公开函数
 $PublicFunctions = @(
     'Start-FinalizeAndArchive',
-    'Select-Project'
+    'Select-Project',
+    'Invoke-NotificationSound'
 )
 
 foreach ($Function in $PublicFunctions)
