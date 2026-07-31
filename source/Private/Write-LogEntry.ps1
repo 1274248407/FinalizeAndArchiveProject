@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     轻量日志函数，模仿 Python loguru 输出格式
 .DESCRIPTION
@@ -10,9 +10,9 @@
 .PARAMETER Message
     (string) 日志消息内容
 .EXAMPLE
-    Write-Log -Level Info -Message "备份创建成功"
+    Write-LogEntry -Level Info -Message "备份创建成功"
 .EXAMPLE
-    Write-Log -Level Error -Message "配置文件不存在"
+    Write-LogEntry -Level Error -Message "配置文件不存在"
 .INPUTS
     [string]
 .OUTPUTS
@@ -21,8 +21,9 @@
     Author:  lucas_gold
     Website: https://github.com/1274248407
 #>
-function Write-Log
+function Write-LogEntry
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '')]
     [CmdletBinding()]
     [OutputType([void])]
     param (
@@ -34,7 +35,7 @@ function Write-Log
         [string] $Message
     )
 
-    # 获取调用者信息：跳过 Write-Log 自身（索引1），取实际调用者（索引2）
+    # 获取调用者信息：跳过 Write-LogEntry 自身（索引1），取实际调用者（索引2）
     $CallerFrame = $null
     $CallStack = Get-PSCallStack
     if ($CallStack.Count -ge 3)
@@ -83,19 +84,32 @@ function Write-Log
     $LevelText = $Level.ToUpper().PadRight(7)
 
     # 根据级别选择颜色
-    $ColorMap = @{
+    $LevelColorMap = @{
         'Info'    = 'White'
         'Success' = 'Green'
         'Warning' = 'Yellow'
         'Error'   = 'Red'
     }
-    $Color = $ColorMap[$Level]
+    $LevelColor = $LevelColorMap[$Level]
 
-    # 组装 loguru 风格的日志行
-    $LogLine = "${Timestamp} | ${LevelText} | ${CallerInfo} - ${Message}"
-
-    # 输出带颜色的日志
-    Write-Host $LogLine -ForegroundColor $Color
+    # loguru 风格分段配色：时间戳暗色 | 级别亮色 | 调用者青色 | 消息随级别色
+    # 输出时间戳（暗灰色）
+    Write-Host "${Timestamp} " -NoNewline -ForegroundColor DarkGray
+    # 输出分隔符 + 级别（级别对应颜色）
+    Write-Host "| ${LevelText} | " -NoNewline -ForegroundColor $LevelColor
+    # 输出调用者信息（青色）
+    Write-Host "${CallerInfo} - " -NoNewline -ForegroundColor Cyan
+    # 输出消息（级别对应颜色，ERROR 级别加红色背景）
+    if ($Level -eq 'Error')
+    {
+        Write-Host $Message -NoNewline -ForegroundColor White -BackgroundColor Red
+    }
+    else
+    {
+        Write-Host $Message -NoNewline -ForegroundColor $LevelColor
+    }
+    # 换行
+    Write-Host ''
 
     # ERROR 级别抛出终止错误，保持错误传播链
     if ($Level -eq 'Error')

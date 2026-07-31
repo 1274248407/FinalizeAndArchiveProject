@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     项目备份管理器
 .DESCRIPTION
@@ -42,15 +42,15 @@ class BackupManager
             # 若备份目录已存在，先清理再重新复制
             if (Test-Path -LiteralPath $BackupDir)
             {
-                Remove-Item -LiteralPath $BackupDir -Recurse -Force
+                Send-ToRecycleBin -Path $BackupDir
             }
             Copy-Item -LiteralPath $ProjectPath -Destination $BackupDir -Recurse -Force
-            Write-Log -Level Success -Message "备份创建成功: $BackupDir"
+            Write-LogEntry -Level Success -Message "备份创建成功: $BackupDir"
             return $true
         }
         catch
         {
-            Write-Log -Level Warning -Message "备份失败: $PSItem"
+            Write-LogEntry -Level Warning -Message "备份失败: $PSItem"
             return $false
         }
     }

@@ -1,12 +1,12 @@
-﻿<#
+<#
 .SYNOPSIS
-    FinalizeAndArchiveProject 模块脚本
+FinalizeAndArchiveProject 模块脚本
 .DESCRIPTION
-    高性能项目归档处理工具的核心模块。
-    负责加载类定义、私有函数和公开函数，并导出公开接口。
+高性能项目归档处理工具的核心模块。
+负责加载类定义、私有函数和公开函数，并导出公开接口。
 .NOTES
-    Author:  lucas_gold
-    Website: https://github.com/1274248407
+Author: lucas_gold
+Website: https://github.com/1274248407
 #>
 
 # 导入外部依赖模块
@@ -34,7 +34,11 @@ $PrivateFunctions = @(
     'Invoke-ArchiveProject',
     'Invoke-NotificationSound',
     'Remove-Backup',
-    'Write-Log'
+    'Write-LogEntry',
+    'Resolve-Config',
+    'Invoke-FilePreparation',
+    'Update-ReadmeProgress',
+    'Send-ToRecycleBin'
 )
 
 foreach ($Function in $PrivateFunctions)

@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     配置文件管理器
 .DESCRIPTION
@@ -36,7 +36,7 @@ class ConfigManager
         # 检查配置文件是否存在
         if (-not (Test-Path -LiteralPath $ConfigFile -PathType Leaf))
         {
-            Write-Log -Level Warning -Message "配置文件不存在: $ConfigFile"
+            Write-LogEntry -Level Warning -Message "配置文件不存在: $ConfigFile"
             return $null
         }
 
@@ -48,7 +48,7 @@ class ConfigManager
         }
         catch
         {
-            Write-Log -Level Warning -Message "配置解析错误: $PSItem"
+            Write-LogEntry -Level Warning -Message "配置解析错误: $PSItem"
             return $null
         }
     }

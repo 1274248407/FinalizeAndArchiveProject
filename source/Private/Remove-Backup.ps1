@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     清理项目备份目录
 .DESCRIPTION
@@ -36,15 +36,15 @@ function Remove-Backup
         {
             if ($PSCmdlet.ShouldProcess($BackupDir, '删除备份目录'))
             {
-                Remove-Item -LiteralPath $BackupDir -Recurse -Force
-                Write-Log -Level Success -Message "备份已清理: $BackupDir"
+                Send-ToRecycleBin -Path $BackupDir
+                Write-LogEntry -Level Success -Message "备份已清理: $BackupDir"
             }
         }
         return $true
     }
     catch
     {
-        Write-Log -Level Warning -Message "备份清理失败: $PSItem"
+        Write-LogEntry -Level Warning -Message "备份清理失败: $PSItem"
         return $false
     }
 }

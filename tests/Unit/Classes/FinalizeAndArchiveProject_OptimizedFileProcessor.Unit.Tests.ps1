@@ -2,7 +2,7 @@
 
 BeforeAll {
     $ModulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\..\source'
-    . (Join-Path -Path $ModulePath -ChildPath 'Private\Write-Log.ps1')
+    . (Join-Path -Path $ModulePath -ChildPath 'Private\Write-LogEntry.ps1')
     . (Join-Path -Path $ModulePath -ChildPath 'Classes\OptimizedFileProcessor.ps1')
 }
 

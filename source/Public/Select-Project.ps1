@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     交互式选择待处理项目
 .DESCRIPTION
@@ -44,14 +44,14 @@ function Select-Project
     }
     catch
     {
-        Write-Log -Level Warning -Message "扫描项目目录失败: $PSItem"
+        Write-LogEntry -Level Warning -Message "扫描项目目录失败: $PSItem"
         return $null
     }
 
     # 无项目时直接返回
     if ($Projects.Count -eq 0)
     {
-        Write-Log -Level Warning -Message '未找到项目'
+        Write-LogEntry -Level Warning -Message '未找到项目'
         return $null
     }
 
@@ -75,11 +75,11 @@ function Select-Project
             {
                 return $Projects[$Index]
             }
-            Write-Log -Level Warning -Message '编号超出范围'
+            Write-LogEntry -Level Warning -Message '编号超出范围'
         }
         catch
         {
-            Write-Log -Level Warning -Message '请输入有效数字'
+            Write-LogEntry -Level Warning -Message '请输入有效数字'
         }
     }
 }

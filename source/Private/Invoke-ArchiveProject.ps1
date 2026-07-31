@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     将项目目录归档到目标位置
 .DESCRIPTION
@@ -42,12 +42,12 @@ function Invoke-ArchiveProject
             throw '归档验证失败: 源目录仍存在或目标目录不存在'
         }
 
-        Write-Log -Level Success -Message "项目已归档: $Destination"
+        Write-LogEntry -Level Success -Message "项目已归档: $Destination"
         return $true
     }
     catch
     {
-        Write-Log -Level Warning -Message "归档失败: $PSItem"
+        Write-LogEntry -Level Warning -Message "归档失败: $PSItem"
         return $false
     }
 }

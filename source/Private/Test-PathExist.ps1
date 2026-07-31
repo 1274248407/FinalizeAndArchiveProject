@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     验证多个路径是否存在
 .DESCRIPTION
@@ -28,7 +28,7 @@ function Test-PathExist
     {
         if (-not (Test-Path -LiteralPath $CheckPath))
         {
-            Write-Log -Level Warning -Message "路径不存在: $CheckPath"
+            Write-LogEntry -Level Warning -Message "路径不存在: $CheckPath"
             return $false
         }
     }

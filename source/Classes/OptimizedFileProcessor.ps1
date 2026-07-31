@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     文件处理器
 .DESCRIPTION
@@ -81,7 +81,7 @@ class OptimizedFileProcessor
         }
         catch
         {
-            Write-Log -Level Warning -Message "扫描目录失败 $Directory : $PSItem"
+            Write-LogEntry -Level Warning -Message "扫描目录失败 $Directory : $PSItem"
             return @()
         }
     }

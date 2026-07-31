@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     发送任务完成提示音
 .DESCRIPTION
@@ -43,22 +43,22 @@ function Invoke-NotificationSound
         'Success'
         {
             $SoundFile = Join-Path -Path $SoundsDir -ChildPath 'success.wav'
-            Write-Log -Level Success -Message '任务执行成功！'
+            Write-LogEntry -Level Success -Message '任务执行成功！'
         }
         'Warning'
         {
             $SoundFile = Join-Path -Path $SoundsDir -ChildPath 'warning.wav'
-            Write-Log -Level Warning -Message '任务执行完成，但有警告信息'
+            Write-LogEntry -Level Warning -Message '任务执行完成，但有警告信息'
         }
         'Error'
         {
             $SoundFile = Join-Path -Path $SoundsDir -ChildPath 'error.wav'
-            Write-Log -Level Warning -Message '任务执行失败！'
+            Write-LogEntry -Level Warning -Message '任务执行失败！'
         }
         'Info'
         {
             $SoundFile = Join-Path -Path $SoundsDir -ChildPath 'info.wav'
-            Write-Log -Level Info -Message '任务执行完成'
+            Write-LogEntry -Level Info -Message '任务执行完成'
         }
     }
 
@@ -73,11 +73,11 @@ function Invoke-NotificationSound
         }
         catch
         {
-            Write-Log -Level Warning -Message "播放音效失败: $PSItem"
+            Write-LogEntry -Level Warning -Message "播放音效失败: $PSItem"
         }
     }
     else
     {
-        Write-Log -Level Warning -Message "音效文件不存在: $SoundFile"
+        Write-LogEntry -Level Warning -Message "音效文件不存在: $SoundFile"
     }
 }
