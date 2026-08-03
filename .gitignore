@@ -12,3 +12,6 @@ output/
 lib/
 *.nuspec
 *.nupkg
+
+# 本地需求文档（不上传）
+doc/toast-notification-spec.md
