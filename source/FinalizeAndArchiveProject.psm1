@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
 FinalizeAndArchiveProject 模块脚本
 .DESCRIPTION
@@ -16,7 +16,7 @@ Import-Module PSToml -ErrorAction Stop
 $ClassFiles = @(
     'BackupManager',
     'ConfigManager',
-    'OptimizedFileProcessor'
+    'FileProcessor'
 )
 
 foreach ($ClassFile in $ClassFiles)

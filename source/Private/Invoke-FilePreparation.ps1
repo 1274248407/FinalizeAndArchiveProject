@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     执行文件准备流程
 .DESCRIPTION
@@ -35,7 +35,7 @@ function Invoke-FilePreparation
         [string] $WarningImagePath
     )
 
-    $FileProcessor = [OptimizedFileProcessor]::new()
+    $FileProcessor = [FileProcessor]::new()
     $Files = $FileProcessor.ScanDirectory($FinalPagesPath, $ImageExtensions)
     if ($Files.Count -eq 0)
     {

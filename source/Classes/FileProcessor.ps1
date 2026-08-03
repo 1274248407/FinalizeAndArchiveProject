@@ -4,23 +4,23 @@
 .DESCRIPTION
     提供文件扫描、自然排序（Natural Sort）和文件名编号分析等功能。
 .EXAMPLE
-    $Processor = [OptimizedFileProcessor]::new()
+    $Processor = [FileProcessor]::new()
     $Files = $Processor.ScanDirectory("D:\Images", @(".jpg", ".png"))
 .NOTES
     Author:  lucas_gold
     Website: https://github.com/1274248407
 #>
-class OptimizedFileProcessor
+class FileProcessor
 {
     # 最大并行工作线程数
     [int] $MaxWorkers
 
-    OptimizedFileProcessor()
+    FileProcessor()
     {
         $this.MaxWorkers = [Math]::Min(64, ([Environment]::ProcessorCount * 2 + 4))
     }
 
-    OptimizedFileProcessor([int] $MaxWorkers)
+    FileProcessor([int] $MaxWorkers)
     {
         $this.MaxWorkers = $MaxWorkers
     }

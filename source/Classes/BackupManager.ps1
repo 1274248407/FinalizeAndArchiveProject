@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     项目备份管理器
 .DESCRIPTION
@@ -30,21 +30,22 @@ class BackupManager
     #>
     static [bool] CreateBackup([string] $ProjectDir)
     {
-        # 解析项目路径的各个部分
-        $ProjectPath = [System.IO.Path]::GetFullPath($ProjectDir)
-        $ParentDir = [System.IO.Path]::GetDirectoryName($ProjectPath)
-        $ProjectName = [System.IO.Path]::GetFileName($ProjectPath)
-        # 构造备份目录路径
-        $BackupDir = Join-Path -Path $ParentDir -ChildPath "${ProjectName}_backup"
-
         try
         {
+            # 解析项目路径的各个部分（需在 try 块内，防止空字符串等非法路径抛出未捕获异常）
+            $ProjectPath = [System.IO.Path]::GetFullPath($ProjectDir)
+            $ParentDir = [System.IO.Path]::GetDirectoryName($ProjectPath)
+            $ProjectName = [System.IO.Path]::GetFileName($ProjectPath)
+            # 构造备份目录路径
+            $BackupDir = Join-Path -Path $ParentDir -ChildPath "${ProjectName}_backup"
+
             # 若备份目录已存在，先清理再重新复制
             if (Test-Path -LiteralPath $BackupDir)
             {
                 Send-ToRecycleBin -Path $BackupDir
             }
-            Copy-Item -LiteralPath $ProjectPath -Destination $BackupDir -Recurse -Force
+            # -ErrorAction Stop 将非终止性错误转为终止性错误，确保 catch 能捕获源路径不存在等失败
+            Copy-Item -LiteralPath $ProjectPath -Destination $BackupDir -Recurse -Force -ErrorAction Stop
             Write-LogEntry -Level Success -Message "备份创建成功: $BackupDir"
             return $true
         }
