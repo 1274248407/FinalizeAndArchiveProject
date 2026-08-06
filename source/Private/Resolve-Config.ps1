@@ -24,8 +24,6 @@ function Resolve-Config
         [string] $ConfigPath
     )
 
-    $ConfigManager = [ConfigManager]::new()
-
     if (-not $ConfigPath)
     {
         $SearchPaths = @(
@@ -51,7 +49,7 @@ function Resolve-Config
         }
     }
 
-    $Config = $ConfigManager.LoadConfig($ConfigPath)
+    $Config = [ConfigManager]::LoadConfig($ConfigPath)
     if ($null -eq $Config)
     {
         Write-LogEntry -Level Warning -Message '配置加载失败'
