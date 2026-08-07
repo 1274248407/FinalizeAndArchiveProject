@@ -1,7 +1,20 @@
 ﻿---
-alwaysApply: true
+alwaysApply: false
+description: PowerShell 7 模块开发规范（运行时环境约束、语法约束、命名风格、防御性编程、Help 文档、Pester v5 测试）。当涉及本项目 source/ 或 tests/ 目录下的 PowerShell 代码编写、重构、测试时应用。
 ---
 # PowerShell 7 专项开发规则
+
+## 0. 运行时环境与语法约束
+
+- **运行时**：项目目标运行时为 **Windows + PowerShell 7**，不考虑跨平台兼容性，不考虑跨 PowerShell 版本兼容性（不兼容 Windows PowerShell 5.1 及更早版本）。
+- **允许使用 pwsh7 新语法**：
+  - 空合并运算符 `??`、空合并赋值 `??=`
+  - 三元运算符 `? :`
+  - 管道链 `&&`、`||`（替代 `if ($LASTEXITCODE -eq 0)` 模式）
+- **禁止 5.1 兼容写法**：
+  - 禁止 `Out-File` / `Set-Content` / `Get-Content` / `Add-Content` 不带 `-Encoding` 参数（pwsh7 默认 UTF8-noBOM，但显式优于隐式，避免版本歧义）
+  - 禁止依赖 BOM 行为（pwsh7 不写 BOM，与 5.1 不同）
+- **重构指令**：在修改或重构现有代码时，AI 必须主动把 5.1 兼容写法改为 pwsh7 新语法。
 
 ## 1. 语法与架构硬性约束
 

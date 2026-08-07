@@ -70,7 +70,8 @@ function Invoke-FilePreparation
         $Ext = $Files[$i].Extension
         $TmpName = "__tmp_{0:D$Width}{1}" -f $i, $Ext
         $TmpPath = Join-Path -Path $FinalPagesPath -ChildPath $TmpName
-        $NewNum = if ($i -eq 0) { $i + 1 } else { $i + 2 }
+        # 首个文件从 1 开始编号，其余递增 2 以保持原序号偏移
+        $NewNum = $i -eq 0 ? $i + 1 : $i + 2
         $NewName = "{0:D$Width}{1}" -f $NewNum, $Ext
 
         try

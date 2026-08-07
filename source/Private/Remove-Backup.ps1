@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     清理项目备份目录
 .DESCRIPTION
@@ -23,8 +23,8 @@ function Remove-Backup
         [string] $ProjectDir
     )
 
-    # 解析并构造备份目录路径
-    $ProjectPath = [System.IO.Path]::GetFullPath($ProjectDir)
+    # 解析并构造备份目录路径（规范化末尾反斜杠，避免 GetDirectoryName/GetFileName 解析错位）
+    $ProjectPath = [System.IO.Path]::GetFullPath($ProjectDir).TrimEnd('\', '/')
     $ParentDir = [System.IO.Path]::GetDirectoryName($ProjectPath)
     $ProjectName = [System.IO.Path]::GetFileName($ProjectPath)
     $BackupDir = Join-Path -Path $ParentDir -ChildPath "${ProjectName}_backup"

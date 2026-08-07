@@ -101,7 +101,7 @@ Describe 'BackupManager' {
             # 使用 .NET 方法创建目录，避免 PowerShell 通配符解释
             $SourceDir = Join-Path -Path $TestDrive -ChildPath '2026-07-24_[test]'
             $null = [System.IO.Directory]::CreateDirectory($SourceDir)
-            'content' | Out-File -LiteralPath (Join-Path $SourceDir 'file.txt') -NoNewline
+            'content' | Out-File -LiteralPath (Join-Path $SourceDir 'file.txt') -NoNewline -Encoding UTF8
 
             $Result = [BackupManager]::CreateBackup($SourceDir)
 
@@ -155,7 +155,7 @@ Describe 'BackupManager' {
 
             $SourceDir = Join-Path -Path $TestDrive -ChildPath 'CopyFail'
             New-Item -ItemType Directory -Path $SourceDir -Force | Out-Null
-            'content' | Out-File -LiteralPath (Join-Path $SourceDir 'file.txt') -NoNewline
+            'content' | Out-File -LiteralPath (Join-Path $SourceDir 'file.txt') -NoNewline -Encoding UTF8
 
             $Result = [BackupManager]::CreateBackup($SourceDir)
 

@@ -37,7 +37,11 @@ function Invoke-ArchiveProject
         Move-Item -LiteralPath $ProjectDir -Destination $Destination -Force
 
         # 验证移动结果：源目录应已不存在，目标目录应存在
-        if ((Test-Path -LiteralPath $ProjectDir) -or (-not (Test-Path -LiteralPath $Destination)))
+        $SourceGone = -not (Test-Path -LiteralPath $ProjectDir)
+        $DestinationPresent = Test-Path -LiteralPath $Destination
+        $MoveSucceeded = $SourceGone -and $DestinationPresent
+
+        if (-not $MoveSucceeded)
         {
             throw '归档验证失败: 源目录仍存在或目标目录不存在'
         }

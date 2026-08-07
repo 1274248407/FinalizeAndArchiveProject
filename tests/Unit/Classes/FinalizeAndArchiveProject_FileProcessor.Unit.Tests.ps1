@@ -115,38 +115,36 @@ Describe 'FileProcessor' {
             $Processor = [FileProcessor]::new()
             $Dir = Join-Path -Path $TestDrive -ChildPath 'Mixed'
             New-Item -ItemType Directory -Path $Dir -Force | Out-Null
-            'a' | Out-File -LiteralPath (Join-Path $Dir 'a.txt') -NoNewline
-            'b' | Out-File -LiteralPath (Join-Path $Dir 'b.jpg') -NoNewline
+            'a' | Out-File -LiteralPath (Join-Path $Dir 'a.txt') -NoNewline -Encoding UTF8
+            'b' | Out-File -LiteralPath (Join-Path $Dir 'b.jpg') -NoNewline -Encoding UTF8
 
             $Result = $Processor.ScanDirectory($Dir, $null)
 
-            $Result.Count | Should -Be 2
+            @($Result.Name | Sort-Object) -join ',' | Should -Be 'a.txt,b.jpg'
         }
 
         It '应按扩展名过滤文件（大小写不敏感）' {
             $Processor = [FileProcessor]::new()
             $Dir = Join-Path -Path $TestDrive -ChildPath 'Filtered'
             New-Item -ItemType Directory -Path $Dir -Force | Out-Null
-            'a' | Out-File -LiteralPath (Join-Path $Dir 'a.TXT') -NoNewline
-            'b' | Out-File -LiteralPath (Join-Path $Dir 'b.jpg') -NoNewline
-            'c' | Out-File -LiteralPath (Join-Path $Dir 'c.txt') -NoNewline
+            'a' | Out-File -LiteralPath (Join-Path $Dir 'a.TXT') -NoNewline -Encoding UTF8
+            'b' | Out-File -LiteralPath (Join-Path $Dir 'b.jpg') -NoNewline -Encoding UTF8
+            'c' | Out-File -LiteralPath (Join-Path $Dir 'c.txt') -NoNewline -Encoding UTF8
 
             $Result = $Processor.ScanDirectory($Dir, @('.txt'))
 
-            $Result.Count | Should -Be 2
-            ($Result.Name | Sort-Object) -join ',' | Should -Be 'a.TXT,c.txt'
+            @($Result.Name | Sort-Object) -join ',' | Should -Be 'a.TXT,c.txt'
         }
 
         It '应正确处理路径中的方括号特殊字符' {
             $Processor = [FileProcessor]::new()
             $Dir = Join-Path -Path $TestDrive -ChildPath '2026-07-24_[test]'
             New-Item -ItemType Directory -Path $Dir -Force | Out-Null
-            'content' | Out-File -LiteralPath (Join-Path $Dir 'page001.jpg') -NoNewline
+            'content' | Out-File -LiteralPath (Join-Path $Dir 'page001.jpg') -NoNewline -Encoding UTF8
 
             $Result = $Processor.ScanDirectory($Dir, @('.jpg'))
 
-            $Result.Count | Should -Be 1
-            $Result[0].Name | Should -Be 'page001.jpg'
+            @($Result.Name) -join ',' | Should -Be 'page001.jpg'
         }
     }
 

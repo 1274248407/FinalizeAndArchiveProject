@@ -75,7 +75,7 @@ class FileProcessor
             if ($null -ne $Extensions -and $Extensions.Count -gt 0)
             {
                 $LowerExtensions = $Extensions | ForEach-Object { $PSItem.ToLower() }
-                $Files = $Files | Where-Object { $LowerExtensions -contains $_.Extension.ToLower() }
+                $Files = $Files | Where-Object { $LowerExtensions -contains $PSItem.Extension.ToLower() }
             }
             return $Files
         }

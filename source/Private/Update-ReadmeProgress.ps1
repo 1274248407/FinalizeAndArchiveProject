@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     更新 README 中的进度标记
 .DESCRIPTION
@@ -50,10 +50,16 @@ function Update-ReadmeProgress
 
         foreach ($Item in $Items)
         {
-            $Content = $Content -replace '- \[ \] ' + [regex]::Escape($Item), '- [X] ' + $Item
+            # 正则完整模式：对前半部分中的 [ ] 也进行转义（避免被解释为字符类）
+            $Pattern = [regex]::Escape('- [ ] ' + $Item)
+            $Replacement = '- [X] ' + $Item
+            $Content = $Content -replace $Pattern, $Replacement
         }
 
-        $Content = $Content -replace '- \[\[ Xx\]\?\] 嵌字 \(完成至页 .*?\)', "- [X] 嵌字 (完成至页 $TotalPages)"
+        # 修复嵌字正则：前导的 "- [ ] " 是字面方括号而非字符类
+        $InpaintingPattern = [regex]::Escape('- [ ] 嵌字 (完成至页 ') + '.*?' + [regex]::Escape(')')
+        $InpaintingReplacement = "- [X] 嵌字 (完成至页 $TotalPages)"
+        $Content = $Content -replace $InpaintingPattern, $InpaintingReplacement
 
         if ($PSCmdlet.ShouldProcess($ReadmePath, '更新 README 进度标记'))
         {
