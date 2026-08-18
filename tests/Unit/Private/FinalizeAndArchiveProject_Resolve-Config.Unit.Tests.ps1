@@ -61,11 +61,11 @@ image_extensions = [".JPG", ".PNG", ".WebP"]
             Should -Invoke Write-LogEntry -Scope It -ParameterFilter { $Level -eq 'Warning' -and $Message -like '*配置加载失败*' } -Times 1 -Exactly
         }
 
-        It '应在 TOML 合法但缺少 settings 节时返回 $null（访问 $null.image_extensions 触发 catch）' {
+        It '应在 TOML 合法但缺少 settings 节时返回对象（路径字段有效，ImageExtensions 为空数组）' {
             Mock Write-LogEntry { }
             $PartialFile = Join-Path -Path $TestDrive -ChildPath 'partial.toml'
 
-            # 只有 paths 节，缺少 settings 节 → 访问 $null.image_extensions 异常
+            # 只有 paths 节，缺少 settings 节 → 通过三元运算符返回空数组 @()，StrictMode 下不抛异常
             $TomlContent = @'
 [paths]
 active_dir = 'D:\a'
@@ -76,15 +76,19 @@ warning_image = 'D:\c.png'
 
             $Result = Resolve-Config -ConfigPath $PartialFile
 
-            $Result | Should -Be $null
-            Should -Invoke Write-LogEntry -Scope It -ParameterFilter { $Level -eq 'Warning' -and $Message -like '*配置键缺失*' } -Times 1 -Exactly
+            $Result | Should -Not -Be $null
+            $Result.ActiveDir | Should -Be 'D:\a'
+            $Result.ArchiveDir | Should -Be 'D:\b'
+            $Result.WarningImagePath | Should -Be 'D:\c.png'
+            $Result.ImageExtensions.Count | Should -Be 0
+            $Result.ImageExtensions | Should -Be @()
         }
 
-        It '应在 TOML 合法但 image_extensions 字段缺失时返回 $null' {
+        It '应在 TOML 合法但 image_extensions 字段缺失时返回对象（ImageExtensions 为空数组）' {
             Mock Write-LogEntry { }
             $MissingExtFile = Join-Path -Path $TestDrive -ChildPath 'missing_ext.toml'
 
-            # 缺少 image_extensions
+            # 缺少 image_extensions → 三元运算符左支条件不满足，返回空数组 @()
             $TomlContent = @'
 [paths]
 active_dir = 'D:\a'
@@ -97,8 +101,12 @@ warning_image = 'D:\c.png'
 
             $Result = Resolve-Config -ConfigPath $MissingExtFile
 
-            $Result | Should -Be $null
-            Should -Invoke Write-LogEntry -Scope It -ParameterFilter { $Level -eq 'Warning' -and $Message -like '*配置键缺失*' } -Times 1 -Exactly
+            $Result | Should -Not -Be $null
+            $Result.ActiveDir | Should -Be 'D:\a'
+            $Result.ArchiveDir | Should -Be 'D:\b'
+            $Result.WarningImagePath | Should -Be 'D:\c.png'
+            $Result.ImageExtensions.Count | Should -Be 0
+            $Result.ImageExtensions | Should -Be @()
         }
 
         It '应在 TOML 合法但 paths.active_dir 缺失时返回对象且 ActiveDir 为 $null' {
@@ -186,7 +194,7 @@ image_extensions = [".jpg"]
 
             $Result = Resolve-Config -ConfigPath $NoPathsFile
 
-            # 缺整个 paths 节：$Config.paths 为 $null，属性访问返回 $null 不抛异常
+            # 缺整个 paths 节：通过 pwsh7 三元运算符判空返回 $null，StrictMode 下不抛 PropertyNotFoundException
             $Result | Should -Not -Be $null
             $Result.ActiveDir | Should -Be $null
             $Result.ArchiveDir | Should -Be $null

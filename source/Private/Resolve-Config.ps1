@@ -58,11 +58,20 @@ function Resolve-Config
 
     try
     {
+        # 引用 TOML 配置节：使用索引器（而非点号）访问 OrderedDictionary 键
+        # 点号访问不存在的键在 StrictMode Latest 下抛 PropertyNotFoundException（即使是 OrderedDictionary 自带动态键访问）
+        # 索引器访问不存在的键始终短路返回 $null，StrictMode 安全
+        [object]$PathsSection = $Config['paths']
+        [object]$SettingsSection = $Config['settings']
+
+        # 三元运算符（pwsh7 新语法）：对应节/字段缺失时返回空值或空数组，StrictMode 下不抛异常
+        # 注意：不使用 ?. 空条件访问 — PowerShell 解析器会把 $var?. 解析为变量名含 `?`（与自动变量 $? 冲突）
         return [PSCustomObject]@{
-            ActiveDir        = $Config.paths.active_dir
-            ArchiveDir       = $Config.paths.archive_dir
-            WarningImagePath = $Config.paths.warning_image
-            ImageExtensions  = $Config.settings.image_extensions | ForEach-Object { $PSItem.ToLower() }
+            ActiveDir        = ($null -ne $PathsSection) ? $PathsSection['active_dir'] : $null
+            ArchiveDir       = ($null -ne $PathsSection) ? $PathsSection['archive_dir'] : $null
+            WarningImagePath = ($null -ne $PathsSection) ? $PathsSection['warning_image'] : $null
+            ImageExtensions  = (($null -ne $SettingsSection -and $null -ne $SettingsSection['image_extensions']) ?
+                @($SettingsSection['image_extensions'] | ForEach-Object { $PSItem.ToLower() }) : @())
         }
     }
     catch
