@@ -25,30 +25,6 @@ Describe 'Send-ToRecycleBin' {
     }
 
     Context '文件类型分支（File 走 DeleteFile 分支）' {
-        It '应针对文件路径调用 DeleteFile（不调用 DeleteDirectory）' {
-            $TestFile = Join-Path -Path $TestDrive -ChildPath 'to_delete.txt'
-            'content' | Out-File -LiteralPath $TestFile -NoNewline -Encoding UTF8
-
-            # Mock Write-LogEntry 避免污染输出
-            Mock Write-LogEntry { }
-
-            # Mock Add-Type 以避免依赖 VB 程序集
-            Mock Add-Type -MockWith { }
-
-            # Mock Microsoft.VisualBasic 静态方法通过包装类来验证
-            # 直接验证 VB 删除方法调用：由于类方法 Mock 困难，改为验证结果——路径不存在（被真实 VB 调用删除）
-            # 为避免污染真实回收站：这里只验证路径存在性 + 分支选择（通过 Mock Add-Type 跳过真实 VB 调用）
-            Mock Test-Path -MockWith {
-                param($LiteralPath)
-                return $true
-            } -ParameterFilter { $LiteralPath -eq $TestFile }
-
-            # 用 Remove-Item Mock 捕获最终行为（如果 VB 失败进入 catch 降级会调用它）
-            Mock Remove-Item { }
-
-            Send-ToRecycleBin -Path $TestFile
-        }
-
         It '应在文件真实存在时成功删除（验证文件消失 = 移到回收站或删除）' {
             $TestFile = Join-Path -Path $TestDrive -ChildPath 'real_test.txt'
             'content' | Out-File -LiteralPath $TestFile -NoNewline -Encoding UTF8
@@ -58,6 +34,41 @@ Describe 'Send-ToRecycleBin' {
             Send-ToRecycleBin -Path $TestFile
 
             # 验证文件不存在了（要么在回收站要么被删除，两者都满足"删除"语义）
+            $TestFile | Should -Not -Exist
+        }
+
+        It '应正确处理相对路径文件' {
+            $TestDir = Join-Path -Path $TestDrive -ChildPath 'relative_test_dir'
+            New-Item -ItemType Directory -Path $TestDir -Force | Out-Null
+            $TestFile = Join-Path -Path $TestDir -ChildPath 'test.txt'
+            'content' | Out-File -LiteralPath $TestFile -NoNewline -Encoding UTF8
+
+            # 保存原始 Location 和 .NET CurrentDirectory 以便恢复
+            $OriginalLocation = Get-Location
+            $OriginalCurrentDir = [System.IO.Directory]::GetCurrentDirectory()
+            try
+            {
+                # 同步 PowerShell Location 和 .NET CurrentDirectory，确保 Test-Path 和 VB 解析一致
+                Set-Location -LiteralPath $TestDir
+                [System.IO.Directory]::SetCurrentDirectory($TestDir)
+
+                Send-ToRecycleBin -Path '.\test.txt'
+
+                $TestFile | Should -Not -Exist
+            }
+            finally
+            {
+                Set-Location -LiteralPath $OriginalLocation
+                [System.IO.Directory]::SetCurrentDirectory($OriginalCurrentDir)
+            }
+        }
+
+        It '应正确处理含空格的文件路径' {
+            $TestFile = Join-Path -Path $TestDrive -ChildPath 'file with spaces.txt'
+            'content' | Out-File -LiteralPath $TestFile -NoNewline -Encoding UTF8
+
+            Send-ToRecycleBin -Path $TestFile
+
             $TestFile | Should -Not -Exist
         }
     }
@@ -89,30 +100,123 @@ Describe 'Send-ToRecycleBin' {
 
             (Test-Path -LiteralPath $BracketDir) | Should -Be $false
         }
-    }
 
-    Context '降级为永久删除（catch 分支）' {
-        It '应在 VB 调用抛异常时降级为 Remove-Item -Recurse -Force 并输出 Warning 日志' {
-            # 使用目录测试降级路径
-            $TestDir = Join-Path -Path $TestDrive -ChildPath 'catch_test_dir'
+        It '应正确处理含空格的目录路径' {
+            $TestDir = Join-Path -Path $TestDrive -ChildPath 'dir with spaces'
+            New-Item -ItemType Directory -Path $TestDir -Force | Out-Null
+            $ChildFile = Join-Path -Path $TestDir -ChildPath 'child.txt'
+            'child' | Out-File -LiteralPath $ChildFile -NoNewline -Encoding UTF8
+
+            Send-ToRecycleBin -Path $TestDir
+
+            $TestDir | Should -Not -Exist
+        }
+
+        It '应在目录正常删除时不降级为 Remove-Item' {
+            $TestDir = Join-Path -Path $TestDrive -ChildPath 'no_degrade_dir'
             New-Item -ItemType Directory -Path $TestDir -Force | Out-Null
             $ChildFile = Join-Path -Path $TestDir -ChildPath 'a.txt'
             'a' | Out-File -LiteralPath $ChildFile -NoNewline -Encoding UTF8
 
             Mock Write-LogEntry { }
+            Mock Remove-Item { }
 
-            # Mock Add-Type 后在 catch 前强制失败：通过 Mock VB 方法的替代方式
-            # 方案：Mock Remove-Item 捕获降级调用
-            Mock Remove-Item { } -Verifiable
-
-            # 由于 VB 静态方法无法直接 Mock，这里的验证方式：
-            # 确保在 catch 路径上 Remove-Item 和 Warning 日志各被调用 1 次
-            # 实际验证通过先删除目录让 VB 无法访问时触发降级——但这样不会触发 catch（前置 Test-Path 已拦截）
-            # 因此此处仅验证函数对正常存在目录能走完主路径无异常（Remove-Item 不被调用 = 未降级）
             Send-ToRecycleBin -Path $TestDir
 
-            # 主路径不降级：Remove-Item 不应被调用
+            # VB 成功删除目录，不应触发 catch 降级
             Should -Not -Invoke Remove-Item -Scope It
+        }
+    }
+
+    Context '降级为永久删除（catch 分支）' {
+        It '应在 Add-Type 加载程序集失败时降级为 Remove-Item 并输出 Warning 日志' {
+            $TestFile = Join-Path -Path $TestDrive -ChildPath 'addtype_fail.txt'
+            'content' | Out-File -LiteralPath $TestFile -NoNewline -Encoding UTF8
+
+            Mock Write-LogEntry { }
+            Mock Add-Type -MockWith { throw '程序集加载失败' }
+            Mock Remove-Item { }
+
+            Send-ToRecycleBin -Path $TestFile
+
+            # Remove-Item 是 PowerShell 内置命令，不是被测代码，验证它"真的删了"是在测 PowerShell 而非 Send-ToRecycleBin。
+            # catch 分支：写 Warning 日志 + 调用 Remove-Item
+            Should -Invoke Write-LogEntry -Scope It -ParameterFilter { $Level -eq 'Warning' -and $Message -like '*回收站操作失败*' } -Times 1 -Exactly
+            Should -Invoke Remove-Item -Scope It -ParameterFilter { $LiteralPath -eq $TestFile } -Times 1 -Exactly
+        }
+
+        It '应在文件被独占锁定导致 VB DeleteFile 失败时降级为 Remove-Item' {
+            $TestFile = Join-Path -Path $TestDrive -ChildPath 'locked.txt'
+            'content' | Out-File -LiteralPath $TestFile -NoNewline -Encoding UTF8
+
+            # 独占锁定文件（FileShare.None），VB DeleteFile 无法移动到回收站
+            $Stream = [System.IO.File]::Open($TestFile, 'Open', 'Read', 'None')
+
+            try
+            {
+                Mock Write-LogEntry { }
+                Mock Remove-Item { }
+
+                Send-ToRecycleBin -Path $TestFile
+
+                Should -Invoke Write-LogEntry -Scope It -ParameterFilter { $Level -eq 'Warning' -and $Message -like '*回收站操作失败*' } -Times 1 -Exactly
+                Should -Invoke Remove-Item -Scope It -ParameterFilter { $LiteralPath -eq $TestFile } -Times 1 -Exactly
+            }
+            finally
+            {
+                # 确保文件流被释放，避免 TestDrive 清理失败
+                $Stream.Close()
+                $Stream.Dispose()
+            }
+        }
+
+        It '应在路径不存在但 Test-Path 被欺骗返回 true 时触发 VB 失败降级' {
+            $FakePath = Join-Path -Path $TestDrive -ChildPath 'nonexistent_for_vb_fail.txt'
+
+            Mock Write-LogEntry { }
+            Mock Remove-Item { }
+            # 欺骗存在性检查和类型检查：Test-Path 始终返回 true，但路径实际不存在
+            Mock Test-Path -MockWith { return $true }
+
+            Send-ToRecycleBin -Path $FakePath
+
+            # VB DeleteDirectory 对不存在的路径抛异常 → catch 降级
+            Should -Invoke Write-LogEntry -Scope It -ParameterFilter { $Level -eq 'Warning' -and $Message -like '*回收站操作失败*' } -Times 1 -Exactly
+            Should -Invoke Remove-Item -Scope It -ParameterFilter { $LiteralPath -eq $FakePath } -Times 1 -Exactly
+        }
+
+        It '应在 Test-Path 判定为文件但实际为目录时仍成功删除（VB DeleteFile 对目录也能工作）' {
+            $TestDir = Join-Path -Path $TestDrive -ChildPath 'race_dir_to_file'
+            New-Item -ItemType Directory -Path $TestDir -Force | Out-Null
+
+            Mock Write-LogEntry { }
+            Mock Remove-Item { }
+            # 欺骗类型检查：Container 检查返回 false（假装是文件），实际是目录
+            # -not $PSBoundParameters.ContainsKey('PathType') 精确区分了两次调用：
+            # 第一次无 PathType → 返回 true（放行），第二次有PathType→返回false（欺骗走文件分支）
+            Mock Test-Path -MockWith { return -not $PSBoundParameters.ContainsKey('PathType') }
+
+            Send-ToRecycleBin -Path $TestDir
+
+            # VB DeleteFile 对目录路径不抛异常，优雅处理，不触发 catch 降级
+            Should -Not -Invoke Remove-Item -Scope It
+            Should -Not -Invoke Write-LogEntry -Scope It -ParameterFilter { $Level -eq 'Warning' }
+        }
+
+        It '应在 Test-Path 判定为目录但实际为文件时触发 catch 降级' {
+            $TestFile = Join-Path -Path $TestDrive -ChildPath 'race_file_to_dir.txt'
+            'content' | Out-File -LiteralPath $TestFile -NoNewline -Encoding UTF8
+
+            Mock Write-LogEntry { }
+            Mock Remove-Item { }
+            # 欺骗类型检查：Container 检查返回 true（假装是目录），实际是文件
+            Mock Test-Path -MockWith { return $true }
+
+            Send-ToRecycleBin -Path $TestFile
+
+            # VB DeleteDirectory 对文件路径抛异常 → catch 降级
+            Should -Invoke Write-LogEntry -Scope It -ParameterFilter { $Level -eq 'Warning' -and $Message -like '*回收站操作失败*' } -Times 1 -Exactly
+            Should -Invoke Remove-Item -Scope It -ParameterFilter { $LiteralPath -eq $TestFile } -Times 1 -Exactly
         }
     }
 }
