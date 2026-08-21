@@ -208,14 +208,9 @@ class ClassName
 - **测试文件命名**：测试文件必须以 `.Tests.ps1` 结尾。
 - **文件路径结构**：测试文件应放置在项目根目录下的 `tests` 目录中：
   - 单元测试：`tests/Unit/*.Unit.Tests.ps1`
-  - 集成测试：`tests/Integration/*.Integration.Tests.ps1`
-  - 系统测试：`tests/System/*.System.Tests.ps1`
-  - 验收测试：`tests/Acceptance/*.Acceptance.Tests.ps1`
 - **命名模式**：
-  - 单元测试/集成测试/验收测试：`{ModuleName}_{FunctionName}.{TestType}.Tests.ps1`
+  - `{ModuleName}_{FunctionName}.Unit.Tests.ps1`
     - 示例：`FinalizeAndArchiveProject_Start-FinalizeAndArchive.Unit.Tests.ps1`
-  - 系统测试：`{SystemName}.{TestType}.Tests.ps1`
-    - 示例：`FinalizeAndArchive.Workflow.System.Tests.ps1`、`FinalizeAndArchive.FullPipeline.System.Tests.ps1`
 
 ### 6.2 测试结构规范
 
@@ -232,24 +227,6 @@ class ClassName
 - **测试范围**：测试单个函数或方法的独立功能。
 - **隔离要求**：完全隔离外部依赖，使用 Mock 替代。
 - **目的**：验证函数的逻辑正确性，确保每个单元按预期工作。
-
-#### 6.3.2 集成测试（Integration Testing）
-
-- **测试范围**：测试多个模块或组件之间的交互。
-- **依赖处理**：可以使用部分真实依赖，测试模块间的接口。
-- **目的**：验证模块集成后的协同工作是否正常。
-
-#### 6.3.3 系统测试（System Testing）
-
-- **测试范围**：测试整个系统的端到端流程。
-- **环境要求**：使用真实的测试环境和数据。
-- **目的**：验证系统整体功能符合需求规格。
-
-#### 6.3.4 验收测试（Acceptance Testing）
-
-- **测试范围**：从用户角度验证系统功能。
-- **测试依据**：基于用户需求和业务场景。
-- **目的**：确保系统满足业务需求，可交付使用。
 
 ### 6.4 Mock 规范
 

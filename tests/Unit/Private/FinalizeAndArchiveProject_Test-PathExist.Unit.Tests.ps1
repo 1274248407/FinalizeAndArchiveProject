@@ -52,14 +52,58 @@ Describe 'Test-PathExist' {
             $Result | Should -Be $true
         }
 
-        It '应正确处理混合的文件和目录路径' {
+        It '应正确处理 Unicode/CJK 字符路径' {
             Mock Write-LogEntry { }
-            $File = Join-Path -Path $TestDrive -ChildPath 'readme.txt'
-            $Dir = Join-Path -Path $TestDrive -ChildPath 'assets'
-            New-Item -ItemType File -Path $File -Force | Out-Null
-            New-Item -ItemType Directory -Path $Dir -Force | Out-Null
+            # 使用 .NET 方法避免 PowerShell 路径通配符解释
+            $CjkDir = Join-Path -Path $TestDrive -ChildPath '中文目录'
+            [System.IO.Directory]::CreateDirectory($CjkDir) | Out-Null
+            $CjkFile = Join-Path -Path $CjkDir -ChildPath '测试文件.txt'
+            [System.IO.File]::WriteAllText($CjkFile, 'content')
 
-            $Result = Test-PathExist -Paths @($File, $Dir)
+            $Result = Test-PathExist -Paths @($CjkFile)
+
+            $Result | Should -Be $true
+        }
+
+        It '应在传入重复路径时返回 $true（不误判重复路径）' {
+            Mock Write-LogEntry { }
+            $ExistingFile = Join-Path -Path $TestDrive -ChildPath 'duplicate.txt'
+            New-Item -ItemType File -Path $ExistingFile -Force | Out-Null
+
+            $Result = Test-PathExist -Paths @($ExistingFile, $ExistingFile)
+
+            $Result | Should -Be $true
+        }
+
+        It '应正确处理相对路径（基于当前工作目录解析）' {
+            Mock Write-LogEntry { }
+            $TestDir = Join-Path -Path $TestDrive -ChildPath 'relative_dir'
+            New-Item -ItemType Directory -Path $TestDir -Force | Out-Null
+            $TestFile = Join-Path -Path $TestDir -ChildPath 'relative.txt'
+            New-Item -ItemType File -Path $TestFile -Force | Out-Null
+
+            # 保存原始 Location 以便恢复
+            $OriginalLocation = Get-Location
+            try
+            {
+                Set-Location -LiteralPath $TestDir
+
+                $Result = Test-PathExist -Paths @('.\relative.txt')
+
+                $Result | Should -Be $true
+            }
+            finally
+            {
+                Set-Location -LiteralPath $OriginalLocation
+            }
+        }
+
+        It '应正确处理含空格的路径' {
+            Mock Write-LogEntry { }
+            $SpaceFile = Join-Path -Path $TestDrive -ChildPath 'file with spaces.txt'
+            New-Item -ItemType File -Path $SpaceFile -Force | Out-Null
+
+            $Result = Test-PathExist -Paths @($SpaceFile)
 
             $Result | Should -Be $true
         }
@@ -103,6 +147,11 @@ Describe 'Test-PathExist' {
 
         It '应在传入包含空字符串的数组时抛出参数绑定异常' {
             { Test-PathExist -Paths @('') } | Should -Throw
+        }
+
+        It '应在传入 $null 元素时抛出异常（$null 被 [string[]] 转为空字符串触发 Test-Path 验证）' {
+            # $null 经 [string[]] 参数绑定转为 ''，Test-Path -LiteralPath '' 抛 ParameterBindingValidationException
+            { Test-PathExist -Paths @($null, 'C:\real') } | Should -Throw
         }
     }
 }

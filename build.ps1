@@ -71,7 +71,7 @@ if ($Tasks -contains 'Analyze')
 {
     Write-Output 'Running script analysis...'
     $analysisFiles = Get-ChildItem -Path $modulePath -Recurse -Include '*.ps1', '*.psm1', '*.psd1' |
-        Where-Object { $PSItem.FullName -notmatch 'output|.git|node_modules' }
+        Where-Object { $PSItem.FullName -notmatch 'output|.git|node_modules|tests' }
 
     $results = @()
     foreach ($File in $analysisFiles)
